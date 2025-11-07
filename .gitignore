@@ -1,0 +1,57 @@
+# Build results
+/bin/
+/obj/
+/out/
+
+# Visual Studio files
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# Generated files
+Generated\ Files/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Dotnet artifacts
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Packages
+*.nupkg
+*.snupkg
+packages/
+*.nuget.props
+*.nuget.targets
+
+# Azure
+*.azurePubxml
+*.publishproj
+PublishScripts/
+
+# User secrets
+secrets.json
+
+# Resharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# Coverage
+*.coverage
+*.coveragexml
+
+# Dumps
+*.dmp
