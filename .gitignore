@@ -1,57 +1,114 @@
-# Build results
-/bin/
-/obj/
-/out/
+## C#/.NET ignore rules
 
-# Visual Studio files
-.vs/
+# Solution & project files that should remain local
+*.sln
 *.suo
+*.csproj
+*.vbproj
+*.fsproj
+*.vcxproj
+*.vcxproj.filters
+*.sqlproj
+*.dbproj
+*.wixproj
+*.props
+*.targets
+
+# User-specific files
+*.rsuser
 *.user
 *.userosscache
+*.userprefs
 *.sln.docstates
 
-# Rider / JetBrains
+# Mono/Unity crash logs
+mono_crash.*
+
+# Build results
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+[Oo]ut/
+[Rr]elease*/
+[Dd]ebug*/
+artifacts/
+Generated\ Files/
+
+# Visual Studio
+.vs/
+TestResult*/
+[Tt]est[Rr]esult*/
+*.VisualState.xml
+*.vsp
+*.vspscc
+*.vspx
+*.coverage
+*.coveragexml
+*.code-workspace
+
+# JetBrains Rider
 .idea/
 *.sln.iml
 
-# Generated files
-Generated\ Files/
+# Build tools
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+_TeamCity*
+_NCrunch_*
+*.ncrunchsolution
+*.ncrunchproject
+*.dotCover
+
+# Packaging
+*.nupkg
+*.snupkg
+*.nuspec
+packages/
+*.nuget.props
+*.nuget.targets
 
 # Logs
 *.log
+*.tlog
+*.err
+*.wrn
 
-# OS
+# OS generated files
 .DS_Store
 Thumbs.db
 
 # Dotnet artifacts
 project.lock.json
 project.fragment.lock.json
-artifacts/
 
-# Packages
-*.nupkg
-*.snupkg
-packages/
-*.nuget.props
-*.nuget.targets
-
-# Azure
+# Azure publish artifacts
 *.azurePubxml
 *.publishproj
 PublishScripts/
 
 # User secrets
 secrets.json
+appsettings.Development.json
+**/launchSettings.json
 
-# Resharper
-_ReSharper*/
-*.[Rr]e[Ss]harper
-*.DotSettings.user
-
-# Coverage
-*.coverage
-*.coveragexml
+# Entity Framework
+migrations/
 
 # Dumps
 *.dmp
+*.mdmp
+
+# Others
+*.pidb
+*.svclog
+*.pdb
+*.ipch
+*.iobj
+*.ipdb
+*.opendb
+*.tmp
+*.cache
+*.dbmdl
+*.bak
