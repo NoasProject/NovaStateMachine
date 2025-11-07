@@ -93,6 +93,9 @@ secrets.json
 appsettings.Development.json
 **/launchSettings.json
 
+# Editor settings
+.vscode/settings.json
+
 # Entity Framework
 migrations/
 
