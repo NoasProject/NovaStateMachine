@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace NovaStateMachine
 {
-    public class StateMachine<TContext> : StateMachine where TContext : class
+    public class StateMachine<TContext> : StateMachine where TContext : IStateContext
     {
         public TContext Context { get; }
 
@@ -14,79 +14,100 @@ namespace NovaStateMachine
         }
     }
 
-    public class StateMachine
+    public partial class StateMachine : IState
     {
-        private sealed class Transition
-        {
-            public Type From { get; }
-            public Type To { get; }
-            public Func<bool>? Guard { get; }
+        private readonly Dictionary<string, StateIdentity> _states;
+        private readonly Dictionary<string, List<Transition>> _transitions;
+        private StateIdentity _currentIdentity;
 
-            public Transition(Type from, Type to, Func<bool>? guard)
-            {
-                this.From = from;
-                this.To = to;
-                this.Guard = guard;
-            }
+        protected StateIdentity CurrentIdentity => this._currentIdentity;
 
-            public bool CanTraverse()
-            {
-                return this.Guard?.Invoke() ?? true;
-            }
-        }
-
-        private Dictionary<Type, State> m_states { get; }
-        private Dictionary<Type, List<Transition>> m_transitions { get; }
-        private State m_currentState { get; }
+        public IReadOnlyDictionary<string, StateIdentity> States => this._states;
+        public State CurrentState => this._currentIdentity.State;
 
         public StateMachine()
         {
-            this.m_states = new Dictionary<Type, State>();
-            this.m_transitions = new Dictionary<Type, List<Transition>>();
+            this._states = new Dictionary<string, StateIdentity>();
+            this._transitions = new Dictionary<string, List<Transition>>();
+            this._currentIdentity = default;
         }
 
-        public State? CurrentState => this.m_currentState;
+        public virtual void Awake()
+        {
+            
+        }
 
-        /// <summary>
-        /// ステートを追加し、Awakeを一度だけ呼び出す
-        /// </summary>
+        public virtual void Enter()
+        {
+            this._currentIdentity.State?.OnEnter();
+        }
+
+        public virtual void Exit()
+        {
+        }
+
+        /// <summary> 現在のステートを更新する </summary>
+        public virtual void Update()
+        {
+            this._currentIdentity.State?.OnUpdate();
+        }
+
+        /// <summary> Stateを追加する </summary>
         public TState AddState<TState>() where TState : State
         {
-            Type stateType = typeof(TState);
-            if (this.m_states.ContainsKey(stateType))
-            {
-                throw new InvalidOperationException($"State {stateType.Name} is already registered.");
-            }
-
-            var instance = CreateStateInstance(stateType);
-            this.m_states.Add(stateType, instance);
-            instance.OnAwake();
-            return (TState)instance;
+            return this.AddStateInternal<TState>(typeof(TState).FullName);
         }
 
-        /// <summary>
-        /// ステート遷移を登録する。条件付きの遷移も定義可能。
-        /// </summary>
+        /// <summary> Stateを追加する </summary>
+        public TState AddState<TState>(string stateName) where TState : State
+        {
+            return this.AddStateInternal<TState>(stateName);
+        }
+
+        public TState AddStateInternal<TState>(string stateName) where TState : State
+        {
+            if (this._states.ContainsKey(stateName))
+            {
+                throw new InvalidOperationException($"State {stateName} is already registered.");
+            }
+
+            var instance = CreateStateInstance<TState>();
+            this._states.Add(stateName, new StateIdentity(stateName, typeof(TState), instance));
+            return instance;
+        }
+
+        /// <summary> ステート遷移を登録する </summary>
         public void AddTransition<TFrom, TTo>() where TFrom : State where TTo : State
         {
-            Type fromType = typeof(TFrom);
-            Type toType = typeof(TTo);
+            this.AddTransitionInternal(typeof(TFrom).FullName, typeof(TTo).FullName);
+        }
 
-            EnsureStateRegistered(fromType);
-            EnsureStateRegistered(toType);
+        /// <summary> ステート遷移を登録する </summary>
+        public void AddTransition(string fromState, string toState)
+        {
+            this.AddTransitionInternal(fromState, toState);
+        }
 
-            if (!this.m_transitions.TryGetValue(fromType, out var transitions))
+        private void AddTransitionInternal(string fromState, string toState)
+        {
+            EnsureStateRegistered(fromState);
+            EnsureStateRegistered(toState);
+
+            // 新しく配列を追加する
+            if (!this._transitions.TryGetValue(fromState, out var transitions))
             {
                 transitions = new List<Transition>();
-                this.m_transitions.Add(fromType, transitions);
+                this._transitions.Add(fromState, transitions);
             }
 
-            if (transitions.Any(t => t.To == toType))
+            // すでに遷移が登録されているかチェックする
+            if (transitions.Any(t => t.To == toState))
             {
-                throw new InvalidOperationException($"Transition from {fromType.Name} to {toType.Name} already exists.");
+                throw new InvalidOperationException($"Transition from {fromState} to {toState} already exists.");
             }
 
-            transitions.Add(new Transition(fromType, toType, guard));
+            // 遷移先を登録する
+            transitions.Add(new Transition(fromState, toState));
         }
 
         /// <summary>
@@ -94,12 +115,12 @@ namespace NovaStateMachine
         /// </summary>
         public void SetInitialState<TState>() where TState : State
         {
-            if (this.m_currentState != null)
+            if (this._currentIdentity.State != null)
             {
                 throw new InvalidOperationException("Initial state is already set.");
             }
 
-            var state = GetStateInstance(typeof(TState));
+            var state = this._states.GetValueOrDefault(typeof(TState).FullName);
             Activate(state);
         }
 
@@ -108,90 +129,103 @@ namespace NovaStateMachine
         /// </summary>
         public bool TryChangeState<TState>() where TState : State
         {
-            return TryChangeState(typeof(TState));
+            return this.TryChangeStateInternal(typeof(TState).FullName);
         }
 
         /// <summary>
-        /// 現在のステートを更新する
+        /// 遷移条件を確認してステートを変更する
         /// </summary>
-        public void Update()
+        public bool TryChangeState(string stateName)
         {
-            this.m_currentState?.OnUpdate();
+            return this.TryChangeStateInternal(stateName);
         }
 
-        private bool TryChangeState(Type targetType)
+        private bool TryChangeStateInternal(string stateName)
         {
-            var targetState = GetStateInstance(targetType);
+            // 対象のStateを取得する
+            var identity = this._states.GetValueOrDefault(stateName);
 
-            if (this.m_currentState != null)
+            // 現在設定されているStateが存在する場合は、遷移設定を確認する
+            if (this._currentIdentity.State != null)
             {
-                var currentType = this.m_currentState.GetType();
-                if (!TryGetTransition(currentType, targetType, out var transition) || transition is null)
-                {
-                    return false;
-                }
-
-                if (!transition.CanTraverse())
+                var currentName = this._currentIdentity.Name;
+                // 遷移の設定が存在しない場合は遷移不可
+                if (!TryGetTransition(currentName, stateName, out var transition) || transition is null)
                 {
                     return false;
                 }
             }
 
-            Activate(targetState);
+            this.Activate(identity);
             return true;
         }
 
-        private void Activate(State nextState)
+        /// <summary>
+        /// ステートを有効化する
+        /// </summary>
+        protected void Activate(StateIdentity nextStateIdentity)
         {
-            if (this.m_currentState == nextState)
+            // 同じStateの場合は処理をしない
+            if (this._currentIdentity == nextStateIdentity)
             {
                 return;
             }
 
-            this.m_currentState?.OnExit();
-            this.m_currentState = nextState;
-            this.m_currentState.OnEnter();
+            // 古いStateから抜ける
+            var prevStateIdentity = this._currentIdentity;
+            this._currentIdentity = default;
+            prevStateIdentity.State?.OnExit();
+
+            // 新しいStateに入れ替える
+            nextStateIdentity.State?.OnEnter();
+            this._currentIdentity = nextStateIdentity;
         }
 
-        private State GetStateInstance(Type type)
+        private TState CreateStateInstance<TState>() where TState : IState
         {
-            if (!this.m_states.TryGetValue(type, out var state))
-            {
-                throw new InvalidOperationException($"State {type.Name} is not registered.");
-            }
-
-            return state;
-        }
-
-        private State CreateStateInstance(Type type)
-        {
-            var instance = Activator.CreateInstance(type, this) as State;
+            var instance = Activator.CreateInstance<TState>();
             if (instance == null)
             {
-                throw new InvalidOperationException($"State {type.Name} must define a constructor that accepts {nameof(StateMachine)}.");
+                throw new InvalidOperationException($"State {typeof(TState).FullName} must define a constructor that accepts {nameof(StateMachine)}.");
             }
 
             return instance;
         }
 
-        private void EnsureStateRegistered(Type type)
+        /// <summary>
+        /// Stateが登録されているかチェックする関数
+        /// </summary>
+        private void EnsureStateRegistered(string key)
         {
-            if (!this.m_states.ContainsKey(type))
+            if (!this._states.ContainsKey(key))
             {
-                throw new InvalidOperationException($"State {type.Name} is not registered. Call AddState<{type.Name}>() first.");
+                throw new InvalidOperationException($"State {key} is not registered. Call AddState<{key}>() first.");
             }
         }
 
-        private bool TryGetTransition(Type from, Type to, out Transition? transition)
+        /// <summary>
+        /// 遷移情報を取得する
+        /// </summary>
+        private bool TryGetTransition(string from, string to, out Transition transition)
         {
             transition = null;
-            if (!this.m_transitions.TryGetValue(from, out var transitions))
+            if (!this._transitions.TryGetValue(from, out var transitions))
             {
                 return false;
             }
 
-            transition = transitions.FirstOrDefault(t => t.To == to);
-            return transition is not null;
+            // 遷移が存在する場合は、それを返す
+            foreach (var x in transitions)
+            {
+                if (x.To == to)
+                {
+                    transition = x;
+                    return true;
+                }
+            }
+
+            // 遷移が存在しない
+            return false;
         }
     }
 }
