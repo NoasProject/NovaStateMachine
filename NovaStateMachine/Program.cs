@@ -1,55 +1,75 @@
 using System;
-using NovaStateMachine.Battle;
+using NovaStateMachine;
+using System.Diagnostics;
+using NovaStateMachine.TrafficSignalExsample;
 
 namespace NovaStateMachine
 {
     public class Program
     {
-        public static void Main()
+        public static async Task Main()
         {
-            var context = BuildBattleContext();
-            var stateMachine = new StateMachine<BattleContext>(context);
-
-            stateMachine.AddState<BattleSetupState>();
-            stateMachine.AddState<PlayerTurnState>();
-            stateMachine.AddState<EnemyTurnState>();
-            stateMachine.AddState<BattleResolutionState>();
-
-            stateMachine.AddTransition<BattleSetupState, PlayerTurnState>();
-            stateMachine.AddTransition<PlayerTurnState, EnemyTurnState>();
-            stateMachine.AddTransition<EnemyTurnState, PlayerTurnState>();
-            stateMachine.AddTransition<PlayerTurnState, BattleResolutionState>();
-            stateMachine.AddTransition<EnemyTurnState, BattleResolutionState>();
-
-            stateMachine.SetInitialState<BattleSetupState>();
-
-            while (!context.SimulationCompleted)
+            Console.WriteLine("サンプルコードを実行します");
+            Console.WriteLine("");
+            Console.WriteLine("どのサンプルを実行しますか?");
+            Console.WriteLine("1. 信号機の実行");
+            Console.WriteLine("2. アカウントの登録やログインの実行");
+            var command = Console.ReadLine();
+            int.TryParse(command.Trim(), out int commandNum);
+            string commandName = string.Empty;
+            var bootState = new BootStateMachine();
+            switch (commandNum)
             {
-                stateMachine.Update();
+                case 1:
+                    commandName = "信号機";
+                    bootState.SetStateMachine(new TrafficSignalStateMachine());
+                    break;
+                case 2:
+                    commandName = "アカウント登録やログイン";
+                    break;
+                default:
+                    Console.WriteLine("不明なコマンドです");
+                    return;
             }
 
-            Console.WriteLine("Simulation finished.");
+            Console.WriteLine($"コマンド: {commandName} を実行します");
+            await UpdateStateMachines(bootState);
         }
 
-        private static BattleContext BuildBattleContext()
+        private static async Task UpdateStateMachines(BootStateMachine bootState)
         {
-            var context = new BattleContext
-            {
-                PlayerHp = 75,
-                EnemyHp = 65
-            };
+            using var cts = new CancellationTokenSource();
+            var sw = Stopwatch.StartNew();
+            long lastTicks = sw.ElapsedTicks;
+            long frameTicks = Stopwatch.Frequency / 60; // 60fps
 
-            foreach (var damage in new[] { 14, 11, 18, 22 })
+            while (true)
             {
-                context.PlayerDamageScript.Enqueue(damage);
+                long nowTicks = sw.ElapsedTicks;
+                long deltaTicks = nowTicks - lastTicks;
+                // Console.WriteLine($"経過時間: {deltaTicks} ticks");
+
+                if (deltaTicks >= frameTicks)
+                {
+                    long ms = (long)Math.Floor(deltaTicks * 1000.0 / Stopwatch.Frequency);
+                    lastTicks = nowTicks;
+                    bootState.Update(ms); // 1フレーム分の処理
+                }
+                else
+                {
+                    await Task.Delay(30, cts.Token);
+                }
+
+                if (Console.KeyAvailable)
+                {
+                    Console.ReadKey(true); // 入力を消費
+                    break;
+                }
             }
 
-            foreach (var damage in new[] { 9, 12, 17 })
-            {
-                context.EnemyDamageScript.Enqueue(damage);
-            }
+            (bootState as IDisposable).Dispose();
 
-            return context;
+            Console.WriteLine("処理を終了します");
         }
     }
 }
