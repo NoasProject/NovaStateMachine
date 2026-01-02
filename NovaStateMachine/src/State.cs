@@ -8,47 +8,72 @@ namespace NovaStateMachine
     /// <summary>
     /// ステートの既定クラス
     /// </summary>
-    public abstract class State : IState
+    public class State : IState
     {
-        protected StateMachine m_stateMachine { get; }
+        private StateMachine _stateMachine;
+        protected StateMachine StateMachine => this._stateMachine;
 
-        public State(StateMachine stateMachine)
+        private bool _isAwaked = false;
+        public bool IsActive { get; private set; }
+
+
+        public State()
         {
-            this.m_stateMachine = stateMachine ?? throw new ArgumentNullException(nameof(stateMachine));
         }
 
         // -------------------------------------------------------------
         // Stateの関数の定義
         // -------------------------------------------------------------
-        public abstract void OnAwake();
+        protected virtual void OnAwake() { }
 
-        public abstract void OnEnter();
+        protected virtual void OnEnter() { }
 
-        public abstract void OnExit();
+        protected virtual void OnExit() { }
+        protected virtual void OnUpdate(long elapsedMs) { }
 
-        public abstract void OnUpdate();
+        protected bool Transition(string toState)
+        {
+            return this._stateMachine.TransitionInternal(toState);
+        }
 
+        protected bool Transition<T>() where T : State
+        {
+            return this._stateMachine.TransitionInternal(typeof(T).FullName);
+        }
 
         // -------------------------------------------------------------
         // IStateの実装
         // -------------------------------------------------------------
-        void IState.Awake()
+        void IState.Init(StateMachine stateMachine)
         {
-            OnAwake();
+            this._stateMachine = stateMachine;
         }
 
         void IState.Enter()
         {
+            // すでにアクティブのため実行しない
+            if (this.IsActive) return;
+
+            if (!this._isAwaked)
+            {
+                this._isAwaked = true;
+                OnAwake();                
+            }
+
+            this.IsActive = true;
             OnEnter();
         }
 
-        void IState.Update()
+        void IState.Update(long elapsedMs)
         {
-            OnUpdate();
+            OnUpdate(elapsedMs);
         }
 
         void IState.Exit()
         {
+            if (!this.IsActive) return;
+
+            this.IsActive = false;
             OnExit();
         }
     }
