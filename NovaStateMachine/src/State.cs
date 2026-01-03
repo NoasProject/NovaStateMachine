@@ -42,11 +42,6 @@ namespace NovaStateMachine
             return this._stateMachine.TransitionInternal(TransitionIdentity.ToKey(transitionValue));
         }
 
-        protected bool Transition<T>() where T : State
-        {
-            return this._stateMachine.TransitionInternal(typeof(T).FullName);
-        }
-
         // -------------------------------------------------------------
         // IStateの実装
         // -------------------------------------------------------------
