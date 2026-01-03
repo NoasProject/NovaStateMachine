@@ -45,10 +45,13 @@ namespace NovaStateMachine
             this._bootStateMachine = stateMachine;
         }
 
-
         public void Update(long elapsedMs)
         {
             if (this._isDisposabled)
+                return;
+            
+            // StateMachineがまだ設定されていない場合は、処理をしない
+            if (this._bootStateMachine == null)
                 return;
 
             // アクティブじゃない場合は、Entry処理を実行する
