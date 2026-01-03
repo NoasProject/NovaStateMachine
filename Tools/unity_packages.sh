@@ -9,4 +9,4 @@ dest_dir="$repo_root/Unity/Packages/Runtime"
 
 mkdir -p "$dest_dir"
 
-rsync -a --include='*/' --include='*.cs' --exclude='*' "$src_dir/" "$dest_dir/"
+rsync -a --delete --include='*/' --include='*.cs' --exclude='*' "$src_dir/" "$dest_dir/"

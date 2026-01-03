@@ -15,7 +15,7 @@ Unityや.NETアプリケーションなど、様々なC#プロジェクトに簡
 Unity Package Manager の「Add package from git URL...」に以下を指定してください。
 
 ```
-https://github.com/NoasProject/NovaStateMachine.git?path=Unity/Packages
+https://github.com/NoasProject/NovaStateMachine.git?path=Unity/UnityPackages
 ```
 
 ## 使い方
