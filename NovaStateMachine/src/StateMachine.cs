@@ -23,12 +23,7 @@ namespace NovaStateMachine
         // プロパティ
         protected StateMachine stateMachine { get; private set; }
 
-        // -------------------------------------------------------------
-        // 外部からアクセス可能なプロパティ
-        public State CurrentState => this._currentIdentity.State as State;
-        public bool IsActive => this._isActive;
-
-        public StateMachine()
+        public StateMachine() : base()
         {
             this._states = new Dictionary<string, StateIdentity>();
             this._transitions = new Dictionary<string, List<TransitionIdentity>>();

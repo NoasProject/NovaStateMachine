@@ -14,8 +14,8 @@ namespace NovaStateMachine
             Console.WriteLine("どのサンプルを実行しますか?");
             Console.WriteLine("1. 信号機の実行");
             Console.WriteLine("2. アカウントの登録やログインの実行");
-            var command = Console.ReadLine();
-            int.TryParse(command.Trim(), out int commandNum);
+            string command = Console.ReadLine()?.Trim() ?? string.Empty;
+            int.TryParse(command, out int commandNum);
             string commandName = string.Empty;
             var bootState = new BootStateMachine();
             switch (commandNum)

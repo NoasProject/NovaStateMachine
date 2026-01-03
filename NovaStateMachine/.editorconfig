@@ -1,0 +1,14 @@
+[*.cs]
+
+# CS8765: パラメーターの型の NULL 値の許容が、オーバーライドされたメンバーと一致しません
+dotnet_diagnostic.CS8765.severity = none
+# CS8625: null 非許容の参照型パラメーターに null リテラルを変換できません
+dotnet_diagnostic.CS8625.severity = none
+# CS8618: コンストラクター終了時に非 null 許容フィールドが初期化されていません
+dotnet_diagnostic.CS8618.severity = none
+# CS8603: null 非許容の戻り値の型であるメソッドから、null 参照が戻される可能性があります
+dotnet_diagnostic.CS8603.severity = none
+# CS8604: パラメーターに、null 参照引数が渡される可能性があります
+dotnet_diagnostic.CS8604.severity = none
+# CS8620: null 許容の参照型引数を、null 非許容のパラメーターに渡しています
+dotnet_diagnostic.CS8620.severity = none
