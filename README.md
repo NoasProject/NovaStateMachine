@@ -93,23 +93,24 @@ public class TrafficSignalStateMachine : StateMachine
 
 ### 3. ステートマシンを実行する
 
-作成したステートマシンをインスタンス化し、`Enter()`メソッドで開始します。
-`Update()`メソッドを定期的に呼び出すことで、ステートマシンが更新されます。
+作成したステートマシンを`BootStateMachine`にセットし、`Update()`を定期的に呼び出すことで実行します。
+最初の`Update()`で`Enter()`が呼び出されます。
 
 ```csharp
 // Program.cs
 using System;
 using System.Threading;
+using NovaStateMachine;
 
 public class Program
 {
     public static void Main(string[] args)
     {
-        // ステートマシンを初期化
-        var stateMachine = new TrafficSignalStateMachine();
+        // BootStateMachine を初期化
+        using var bootStateMachine = new BootStateMachine();
 
-        // ステートマシンを開始
-        ((IState)stateMachine).Enter();
+        // 実行したいステートマシンを設定
+        bootStateMachine.SetStateMachine(new TrafficSignalStateMachine());
 
         // 5秒間、100ミリ秒ごとに更新
         var sw = new System.Diagnostics.Stopwatch();
@@ -119,13 +120,13 @@ public class Program
         for (int i = 0; i < 50; i++)
         {
             long currentElapsed = sw.ElapsedMilliseconds;
-            ((IState)stateMachine).Update(currentElapsed - lastElapsed);
+            bootStateMachine.Update(currentElapsed - lastElapsed);
             lastElapsed = currentElapsed;
             Thread.Sleep(100);
         }
 
-        // ステートマシンを終了
-        ((IState)stateMachine).Exit();
+        // using により自動で解放されます。
+        // bootStateMachine.Dispose();
     }
 }
 ```
@@ -133,6 +134,6 @@ public class Program
 
 ## License
 
-MIT License
+Apache License 2.0
 
 Copyright (c) 2024 noa
