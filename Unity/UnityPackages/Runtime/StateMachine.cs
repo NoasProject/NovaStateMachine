@@ -256,9 +256,8 @@ namespace NovaStateMachine
             }
 
             var currentName = this._currentStateIdentity.Name;
-            string toStateName = "";
             // 遷移の設定が存在しない場合は遷移不可
-            if (!TryGetTransition(transitionName, currentName, toStateName, out var transition) || transition is null)
+            if (!TryGetTransition(transitionName, currentName, out var transition) || transition is null)
             {
                 return false;
             }
@@ -333,7 +332,7 @@ namespace NovaStateMachine
         /// <summary>
         /// 遷移情報を取得する
         /// </summary>
-        private bool TryGetTransition(string transitionName, string from, string to, out TransitionIdentity transition)
+        private bool TryGetTransition(string transitionName, string from, out TransitionIdentity transition)
         {
             transition = null;
             if (!this._transitions.TryGetValue(from, out var transitions))
@@ -344,22 +343,10 @@ namespace NovaStateMachine
             // 遷移が存在する場合は、それを返す
             foreach (var x in transitions)
             {
-                // 名前での遷移か、遷移先での遷移かを確認する
-                if (!string.IsNullOrWhiteSpace(transitionName))
+                if (x.Name == transitionName)
                 {
-                    if (x.Name == transitionName)
-                    {
-                        transition = x;
-                        return true;
-                    }
-                }
-                else
-                {
-                    if (x.To == to)
-                    {
-                        transition = x;
-                        return true;
-                    }
+                    transition = x;
+                    return true;
                 }
             }
 
