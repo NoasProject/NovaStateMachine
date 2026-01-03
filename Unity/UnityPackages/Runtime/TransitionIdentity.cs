@@ -18,5 +18,10 @@ namespace NovaStateMachine
             this.To = to;
             this.Callback = callback;
         }
+
+        public static string ToKey<TEnum>(TEnum value) where TEnum : Enum
+        {
+            return typeof(TEnum).FullName + "." + value.ToString();
+        }
     }
 }

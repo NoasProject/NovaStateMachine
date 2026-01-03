@@ -169,9 +169,21 @@ namespace NovaStateMachine
         }
 
         /// <summary> ステート遷移を登録する </summary>
+        public void AddTransition<TFrom, TTo, TTransition>(TTransition transitionValue) where TFrom : State where TTo : State where TTransition : Enum
+        {
+            this.AddTransitionInternal(TransitionIdentity.ToKey(transitionValue), typeof(TFrom).FullName, typeof(TTo).FullName, null);
+        }
+
+        /// <summary> ステート遷移を登録する </summary>
         public void AddTransition<TFrom, TTo>(string transitionName, Action callback) where TFrom : State where TTo : State
         {
             this.AddTransitionInternal(transitionName, typeof(TFrom).FullName, typeof(TTo).FullName, callback);
+        }
+
+        /// <summary> ステート遷移を登録する </summary>
+        public void AddTransition<TFrom, TTo, TTransition>(TTransition transitionValue, Action callback) where TFrom : State where TTo : State where TTransition : Enum
+        {
+            this.AddTransitionInternal(TransitionIdentity.ToKey(transitionValue), typeof(TFrom).FullName, typeof(TTo).FullName, callback);
         }
 
         /// <summary> ステート遷移を登録する </summary>
@@ -181,9 +193,21 @@ namespace NovaStateMachine
         }
 
         /// <summary> ステート遷移を登録する </summary>
+        public void AddTransition<TTransition>(TTransition transitionValue, string fromState, string toState) where TTransition : Enum
+        {
+            this.AddTransitionInternal(TransitionIdentity.ToKey(transitionValue), fromState, toState, null);
+        }
+
+        /// <summary> ステート遷移を登録する </summary>
         public void AddTransition(string transitionName, string fromState, string toState, Action callback)
         {
             this.AddTransitionInternal(transitionName, fromState, toState, callback);
+        }
+
+        /// <summary> ステート遷移を登録する </summary>
+        public void AddTransition<TTransition>(TTransition transitionValue, string fromState, string toState, Action callback) where TTransition : Enum
+        {
+            this.AddTransitionInternal(TransitionIdentity.ToKey(transitionValue), fromState, toState, callback);
         }
 
         private void AddTransitionInternal(string transitionName, string fromState, string toState, Action callback)
@@ -257,13 +281,13 @@ namespace NovaStateMachine
             }
 
             // Stateのアクティブを有効化する
-            this.Activate(identity);
+            this.Activate(identity, transition.Callback);
         }
 
         /// <summary>
         /// ステートを有効化する
         /// </summary>
-        private void Activate(StateIdentity nextStateIdentity)
+        private void Activate(StateIdentity nextStateIdentity, Action transitionCallback)
         {
             // 同じStateの場合は処理をしない
             if (this._currentStateIdentity == nextStateIdentity)
@@ -275,6 +299,9 @@ namespace NovaStateMachine
             var prevStateIdentity = this._currentStateIdentity;
             this._currentStateIdentity = default;
             prevStateIdentity.State?.Exit();
+
+            // 切り替え時にコールバックの発火があるため、発火を行う
+            transitionCallback?.Invoke();
 
             // 新しいStateに入れ替える
             nextStateIdentity.State?.Enter();

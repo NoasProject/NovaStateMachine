@@ -37,9 +37,9 @@ namespace NovaStateMachine
             return this._stateMachine.TransitionInternal(toState);
         }
 
-        protected bool Transition<T>() where T : State
+        protected bool Transition<TTransition>(TTransition transitionValue) where TTransition : Enum
         {
-            return this._stateMachine.TransitionInternal(typeof(T).FullName);
+            return this._stateMachine.TransitionInternal(TransitionIdentity.ToKey(transitionValue));
         }
 
         // -------------------------------------------------------------
