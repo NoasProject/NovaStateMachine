@@ -1,3 +1,5 @@
+using System;
+
 namespace NovaStateMachine
 {
     internal sealed class TransitionIdentity
