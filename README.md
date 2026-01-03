@@ -10,6 +10,14 @@ Unityや.NETアプリケーションなど、様々なC#プロジェクトに簡
 - **ライフサイクルイベント:** 各ステートには `OnAwake`, `OnEnter`, `OnUpdate`, `OnExit` といったライフサイクルイベントがあり、状態遷移に応じた処理を柔軟に実装できます。
 - **型安全:** ジェネリクスを利用して、型安全にステートや遷移を定義できます。
 
+## Unity (UPM) での導入
+
+Unity Package Manager の「Add package from git URL...」に以下を指定してください。
+
+```
+https://github.com/NoasProject/NovaStateMachine.git?path=Unity/Packages
+```
+
 ## 使い方
 
 ### 1. ステートを定義する
