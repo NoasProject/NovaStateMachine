@@ -281,13 +281,13 @@ namespace NovaStateMachine
             }
 
             // Stateのアクティブを有効化する
-            this.Activate(identity);
+            this.Activate(identity, transition.Callback);
         }
 
         /// <summary>
         /// ステートを有効化する
         /// </summary>
-        private void Activate(StateIdentity nextStateIdentity)
+        private void Activate(StateIdentity nextStateIdentity, Action transitionCallback)
         {
             // 同じStateの場合は処理をしない
             if (this._currentStateIdentity == nextStateIdentity)
@@ -299,6 +299,9 @@ namespace NovaStateMachine
             var prevStateIdentity = this._currentStateIdentity;
             this._currentStateIdentity = default;
             prevStateIdentity.State?.Exit();
+
+            // 切り替え時にコールバックの発火があるため、発火を行う
+            transitionCallback?.Invoke();
 
             // 新しいStateに入れ替える
             nextStateIdentity.State?.Enter();
