@@ -94,7 +94,7 @@ namespace NovaStateMachine
 
             this._isActive = false;
             // 子StateのExit処理を先に行う
-            _currentStateIdentity.State.Exit();
+            this._currentStateIdentity.State?.Exit();
 
             // 自身のExit処理を行う
             this.OnExit();
