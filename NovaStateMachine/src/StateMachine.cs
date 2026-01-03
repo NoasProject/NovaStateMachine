@@ -169,9 +169,21 @@ namespace NovaStateMachine
         }
 
         /// <summary> ステート遷移を登録する </summary>
+        public void AddTransition<TFrom, TTo, TTransition>(TTransition transitionValue) where TFrom : State where TTo : State where TTransition : Enum
+        {
+            this.AddTransitionInternal(TransitionIdentity.ToKey(transitionValue), typeof(TFrom).FullName, typeof(TTo).FullName, null);
+        }
+
+        /// <summary> ステート遷移を登録する </summary>
         public void AddTransition<TFrom, TTo>(string transitionName, Action callback) where TFrom : State where TTo : State
         {
             this.AddTransitionInternal(transitionName, typeof(TFrom).FullName, typeof(TTo).FullName, callback);
+        }
+
+        /// <summary> ステート遷移を登録する </summary>
+        public void AddTransition<TFrom, TTo, TTransition>(TTransition transitionValue, Action callback) where TFrom : State where TTo : State where TTransition : Enum
+        {
+            this.AddTransitionInternal(TransitionIdentity.ToKey(transitionValue), typeof(TFrom).FullName, typeof(TTo).FullName, callback);
         }
 
         /// <summary> ステート遷移を登録する </summary>
@@ -181,9 +193,21 @@ namespace NovaStateMachine
         }
 
         /// <summary> ステート遷移を登録する </summary>
+        public void AddTransition<TTransition>(TTransition transitionValue, string fromState, string toState) where TTransition : Enum
+        {
+            this.AddTransitionInternal(TransitionIdentity.ToKey(transitionValue), fromState, toState, null);
+        }
+
+        /// <summary> ステート遷移を登録する </summary>
         public void AddTransition(string transitionName, string fromState, string toState, Action callback)
         {
             this.AddTransitionInternal(transitionName, fromState, toState, callback);
+        }
+
+        /// <summary> ステート遷移を登録する </summary>
+        public void AddTransition<TTransition>(TTransition transitionValue, string fromState, string toState, Action callback) where TTransition : Enum
+        {
+            this.AddTransitionInternal(TransitionIdentity.ToKey(transitionValue), fromState, toState, callback);
         }
 
         private void AddTransitionInternal(string transitionName, string fromState, string toState, Action callback)
