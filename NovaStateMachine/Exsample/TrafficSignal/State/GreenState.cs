@@ -6,6 +6,11 @@ namespace NovaStateMachine.TrafficSignalExsample
 {
     public class GreenState : State
     {
+        public enum TransitionType
+        {
+            ToNext = 1,            
+        }
+
         private ITrafficSignalStateMachine trafficSignalStateMachine => this.StateMachine as ITrafficSignalStateMachine;
         private long _waitMilliseconds;
 
@@ -36,7 +41,7 @@ namespace NovaStateMachine.TrafficSignalExsample
             this._waitMilliseconds -= elapsedMs;
             if (_waitMilliseconds <= 0)
             {
-                this.Transition("ToNext");
+                this.Transition(TransitionType.ToNext);
             }
         }
     }

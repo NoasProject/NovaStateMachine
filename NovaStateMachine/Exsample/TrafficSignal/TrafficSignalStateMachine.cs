@@ -29,8 +29,8 @@ namespace NovaStateMachine.TrafficSignalExsample
             this.AddState<RedState>();
 
             // 遷移の情報を設定する
-            this.AddTransition<GreenState, YellowState>("ToNext");
-            this.AddTransition<YellowState, RedState>("ToNext");
+            this.AddTransition<GreenState, YellowState>(GreenState.TransitionType.ToNext);
+            this.AddTransition<YellowState, RedState>(YellowState.TransitionType.ToNext);
             this.AddTransition<RedState, GreenState>("ToNext");
 
             // 最初は緑色に設定する

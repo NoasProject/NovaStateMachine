@@ -169,7 +169,7 @@ namespace NovaStateMachine
         }
 
         /// <summary> ステート遷移を登録する </summary>
-        public void AddTransition<TFrom, TTo, TTransition>(TTransition transitionValue) where TFrom : State where TTo : State where TTransition : Enum
+        public void AddTransition<TFrom, TTo>(Enum transitionValue) where TFrom : State where TTo : State
         {
             this.AddTransitionInternal(TransitionIdentity.ToKey(transitionValue), typeof(TFrom).FullName, typeof(TTo).FullName, null);
         }
@@ -181,7 +181,7 @@ namespace NovaStateMachine
         }
 
         /// <summary> ステート遷移を登録する </summary>
-        public void AddTransition<TFrom, TTo, TTransition>(TTransition transitionValue, Action callback) where TFrom : State where TTo : State where TTransition : Enum
+        public void AddTransition<TFrom, TTo>(Enum transitionValue, Action callback) where TFrom : State where TTo : State
         {
             this.AddTransitionInternal(TransitionIdentity.ToKey(transitionValue), typeof(TFrom).FullName, typeof(TTo).FullName, callback);
         }
@@ -193,7 +193,7 @@ namespace NovaStateMachine
         }
 
         /// <summary> ステート遷移を登録する </summary>
-        public void AddTransition<TTransition>(TTransition transitionValue, string fromState, string toState) where TTransition : Enum
+        public void AddTransition(Enum transitionValue, string fromState, string toState)
         {
             this.AddTransitionInternal(TransitionIdentity.ToKey(transitionValue), fromState, toState, null);
         }
@@ -205,7 +205,7 @@ namespace NovaStateMachine
         }
 
         /// <summary> ステート遷移を登録する </summary>
-        public void AddTransition<TTransition>(TTransition transitionValue, string fromState, string toState, Action callback) where TTransition : Enum
+        public void AddTransition(Enum transitionValue, string fromState, string toState, Action callback)
         {
             this.AddTransitionInternal(TransitionIdentity.ToKey(transitionValue), fromState, toState, callback);
         }

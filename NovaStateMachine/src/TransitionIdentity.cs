@@ -21,6 +21,7 @@ namespace NovaStateMachine
 
         public static string ToKey<TEnum>(TEnum value) where TEnum : Enum
         {
+            if (value == null) throw new ArgumentNullException(nameof(value));
             return typeof(TEnum).FullName + "." + value.ToString();
         }
     }
